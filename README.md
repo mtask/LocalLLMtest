@@ -33,21 +33,18 @@ options:
                         The context size for Ollama.
 ```
 
-### Query all (`--whoosh_query "all"`) data from the Whoosh and use the query results as context to prompt (`--ollama_prompt`)`.
+### Get all RSS feed data from the Whoosh for last five days (`--days 5`) and use the results as context to prompt (`--ollama_prompt`)`.
 
 ```bash
-python rss_query.py --update --whoosh_query "all" --ollama_prompt "Write a summary of the latest Hacker News articles." --context_size 128000
+python rss_query.py --update --days 5 --ollama_prompt "What are the top security threats to focus on based on the given context." --context_size 128000
 ```
 
-### Query based on published date (`published:[2025-02-20 TO]`) data from the Whoosh and use the query results as context to prompt (`--ollama_prompt`)`.
-
-```bash
-python rss_query.py --whoosh_query "published:[2025-02-20 TO]" --ollama_prompt "Summarize recent Hacker News articles." --context_size 2048
-```
+`--update` specifies that Whoosh index is updated with the latest data from the RSS feeds.
 
 ## Python script - cve_query.py
 
 This script fetches CVE data, stores that data in Whoosh index. Then it is used as a context for Ollama prompts.
+RSS feed can also use feed of CVE data but this has more specific Whoosh schema for CVE data and allows making queries based on that.
 
 ```bash
 usage: cve_query.py [-h] [--update] --whoosh_query WHOOSH_QUERY --ollama_prompt OLLAMA_PROMPT [--context_size CONTEXT_SIZE]
