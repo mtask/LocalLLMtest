@@ -1,0 +1,5 @@
+whoosh_index
+__pycache__
+*.zip
+.seen_cve_ids.json
+venv
