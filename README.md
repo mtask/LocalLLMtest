@@ -2,7 +2,7 @@ This repository's contains some scripts that I have created to test local LLMs.
 
 # Setup ollama
 
-Scripts except Ollama to be running and listening on TCP port 11434. I've been using Docker for this and setup everything with ansible.
+The scripts expect Ollama to be running and listening on TCP port 11434. I've been using Docker for this setup and configured everything with Ansible
 Modify `ansible-ollama.yml` to your needs.
 
 1. `ansible-playbook ansible-ollama.yml` (expects the user be in "docker" group or run as root directly. I.e. no `become`s specified.)
