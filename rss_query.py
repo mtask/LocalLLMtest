@@ -1,11 +1,13 @@
 import argparse
 import os
+import sys
 import feedparser
 from langchain_ollama import OllamaLLM
 from whoosh import index
 from whoosh.fields import Schema, TEXT, ID, DATETIME, KEYWORD
 from whoosh.query import DateRange
 from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
 
 # Define the LLM model to be used
 llm_model = "llama3.2:1b"
@@ -17,7 +19,9 @@ class RssFeed:
             title=TEXT(stored=True),
             link=ID(stored=True),
             description=TEXT(stored=True),
-            published=DATETIME(stored=True)
+            published=DATETIME(stored=True),
+            category=KEYWORD(stored=True),
+            summary=TEXT(stored=True)
         )
         self.index_dir = os.path.join(os.getcwd(), "whoosh_rss_index")
         if not os.path.exists(self.index_dir):
@@ -34,17 +38,30 @@ class RssFeed:
         writer = ix.writer()
         for entry in feed.entries:
             published = datetime(*entry.published_parsed[:6]) if 'published_parsed' in entry else datetime.now()
+            # Check if 'description' attribute exists
+            if 'description' in entry:
+                description = BeautifulSoup(entry.description, 'html.parser').get_text()
+                # Clean up description by removing empty lines and extra whitespace
+                description = "\n".join(line.strip() for line in description.splitlines() if line.strip())
+            else:
+                description = "No description available."
+            # Generate a summary (for simplicity, using the first 200 characters as summary)
+            summary = description[:200] + "..." if len(description) > 200 else description
+            # Extract 'term' attribute from tags if available
+            category = ", ".join(tag['term'] for tag in entry.tags) if 'tags' in entry else "Uncategorized"
             writer.update_document(
                 id=entry.id,
                 title=entry.title,
                 link=entry.link,
-                description=entry.description,
-                published=published
+                description=description,
+                published=published,
+                category=category,
+                summary=summary
             )
         writer.commit()
         print(f"RSS feed data from {url} has been indexed into Whoosh")
 
-    def search_index(self, days, n_results=5):
+    def search_index(self, days, n_results=None):
         """Search the Whoosh index for documents published within the given number of days."""
         ix = index.open_dir(self.index_dir)
         date_limit = datetime.now() - timedelta(days=days)
@@ -63,12 +80,11 @@ def query_ollama(prompt, context_size):
 def rag_pipeline(rss_feed, days, ollama_prompt, context_size):
     """Perform Retrieval-Augmented Generation (RAG) by combining Whoosh and Ollama."""
     # Step 1: Retrieve relevant documents from Whoosh
-    retrieved_docs = rss_feed.search_index(days, n_results=5)
+    retrieved_docs = rss_feed.search_index(days)
     context = " ".join([
-        f"ID: {doc['id']}\nTitle: {doc['title']}\nLink: {doc['link']}\nDescription: {doc['description']}\nPublished: {doc['published']}"
+        f"ID: {doc['id']}\nTitle: {doc['title']}\nLink: {doc['link']}\nDescription: {doc['description']}\nPublished: {doc['published']}\nCategory: {doc['category']}\nSummary: {doc['summary']}"
         for doc in retrieved_docs
     ]) if retrieved_docs else "No relevant documents found."
-
     # Step 2: Send the query along with the context to Ollama
     augmented_prompt = f"Context: {context}\n\nQuestion: {ollama_prompt}\nAnswer:"
     print("######## Augmented Prompt ########")
@@ -85,9 +101,12 @@ def main():
     parser.add_argument('--context_size', type=int, default=2048, help="The context size for Ollama.")
     args = parser.parse_args()
     rss_urls = [
-      "https://feeds.feedburner.com/TheHackersNews",
-      "https://cvefeed.io/rssfeed/severity/high.xml",
-      "https://cvefeed.io/rssfeed/newsroom.xml"]
+        "https://feeds.feedburner.com/TheHackersNews",
+        "https://cvefeed.io/rssfeed/severity/high.xml",
+        "https://cvefeed.io/rssfeed/newsroom.xml",
+        "https://security.paloaltonetworks.com/rss.xml",
+        "https://discuss.elastic.co/c/announcements/security-announcements.rss"
+    ]
 
     rss_feed = RssFeed()
     if args.update:
@@ -99,4 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

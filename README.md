@@ -15,19 +15,18 @@ docker exec -it ollama ollama pull llama3.2:1b
 ## Python script - rss_query.py
 
 
-This script fetches RSS feed data, stores that data in Whoosh index. Then it is used as a context for Ollama prompts.
+This script fetches RSS feed data, stores that data in Whoosh index. Then it is used as a context for Ollama prompts. Feeds are configured inside the script.
 
 ```
 python3 rss_query.py -h
-usage: rss_query.py [-h] [--update] --whoosh_query WHOOSH_QUERY --ollama_prompt OLLAMA_PROMPT [--context_size CONTEXT_SIZE]
+usage: rss_query.py [-h] [--update] --days DAYS --ollama_prompt OLLAMA_PROMPT [--context_size CONTEXT_SIZE]
 
 Manage RSS feed data and query Ollama.
 
 options:
   -h, --help            show this help message and exit
   --update              Update Whoosh index with new RSS feed data.
-  --whoosh_query WHOOSH_QUERY
-                        The query for Whoosh.
+  --days DAYS           The number of days for retrieving data from Whoosh.
   --ollama_prompt OLLAMA_PROMPT
                         The prompt for Ollama.
   --context_size CONTEXT_SIZE
