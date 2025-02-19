@@ -49,13 +49,11 @@ class RssFeed:
     def search_index(self, query_text, n_results=5):
         """Search the Whoosh index for relevant documents."""
         ix = index.open_dir(self.index_dir)
-        
         if query_text.lower() == "all":
             query = Every()
         else:
             qp = QueryParser("description", ix.schema)
             query = qp.parse(query_text)
-        
         with ix.searcher() as searcher:
             results = searcher.search(query, limit=n_results)
             documents = [hit.fields() for hit in results]
@@ -90,16 +88,16 @@ def main():
     parser.add_argument('--whoosh_query', type=str, required=True, help="The query for Whoosh.")
     parser.add_argument('--ollama_prompt', type=str, required=True, help="The prompt for Ollama.")
     parser.add_argument('--context_size', type=int, default=2048, help="The context size for Ollama.")
-    parser.add_argument('--rss_url', type=str, default="https://feeds.feedburner.com/TheHackersNews", help="The URL of the RSS feed.")
     args = parser.parse_args()
+    rss_urls = ["https://feeds.feedburner.com/TheHackersNews"]
 
-    rss_feed = RssFeed(url=args.rss_url)
+    for rss_url in rss_urls:
+        rss_feed = RssFeed(url=rss_url)
+        if args.update:
+            rss_feed.create_index()
 
-    if args.update:
-        rss_feed.create_index()
-
-    response = rag_pipeline(rss_feed, args.whoosh_query, args.ollama_prompt, args.context_size)
-    print("######## Response from LLM ########\n", response)
+        response = rag_pipeline(rss_feed, args.whoosh_query, args.ollama_prompt, args.context_size)
+        print(f"######## Response from LLM for RSS feed {rss_url} ########\n", response)
 
 if __name__ == "__main__":
     main()
