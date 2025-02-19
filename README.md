@@ -43,8 +43,8 @@ python rss_query.py --update --days 5 --ollama_prompt "What are the top security
 
 ## Python script - cve_query.py
 
-This script fetches CVE data, stores that data in Whoosh index. Then it is used as a context for Ollama prompts.
-RSS feed can also use feed of CVE data but this has more specific Whoosh schema for CVE data and allows making queries based on that.
+This script fetches CVE data and stores that data in Whoosh index. Then it is used as a context for Ollama prompts.
+RSS feed can also use feed of CVE data but this has more specific Whoosh schema for CVE data and allows making queries based on that schema.
 
 ```bash
 usage: cve_query.py [-h] [--update] --whoosh_query WHOOSH_QUERY --ollama_prompt OLLAMA_PROMPT [--context_size CONTEXT_SIZE]
@@ -62,7 +62,7 @@ options:
                         The context size for Ollama.
 ```
 
-### Make query to Whoosh and update Whoosh index (`--update`)  with the latest CVE data. Use Whoosh query results as context to prompt (`--ollama_prompt`).
+### Make query to Whoosh (`--whoosh_query "severity: HIGH"`) and update Whoosh index (`--update`)  with the latest CVE data. Use Whoosh query results as context to prompt (`--ollama_prompt`).
 
 ```bash
 python cve_query.py --update --whoosh_query "severity: HIGH" --ollama_prompt "What software is recently affected by high vulnerablities based on the given context?"
