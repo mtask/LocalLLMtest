@@ -20,7 +20,7 @@ def search_index(query_text, n_results=5):
     """Search the Whoosh index for relevant documents."""
     ix = index.open_dir(index_dir)
     # Use MultiFieldParser to allow querying multiple fields
-    qp = MultifieldParser(["description", "severity", "impact"], ix.schema)
+    qp = QueryParser("description", schema=ix.schema)
     q = qp.parse(query_text)
     with ix.searcher() as searcher:
         results = searcher.search(q, limit=n_results)

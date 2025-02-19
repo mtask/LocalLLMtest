@@ -10,15 +10,20 @@ This repository's content has been mainly created for me to test and learn thing
 docker exec -it ollama ollama pull llama3.2:1b
 ```
 
-Used model is specified in `cve_query.py`.
+Used model is specified inside the python scripts (check below).
+
+## Python script - rss_query.py
+
+```bash
+python rss_query.py --update --whoosh_query "all" --ollama_prompt "Write a summary of the latest Hacker News articles." --context_size 128000
+```
 
 ## Python script - cve_query.py
 
 This script downloads recent CVE data and indexes it to Whoosh index. Then this data is used as a context for prompts with Ollama.
 
 ```bash
-python3 cve_query.py -h
-usage: cve_query.py [-h] [--update] --whoosh_query WHOOSH_QUERY --ollama_prompt OLLAMA_PROMPT
+usage: cve_query.py [-h] [--update] --whoosh_query WHOOSH_QUERY --ollama_prompt OLLAMA_PROMPT [--context_size CONTEXT_SIZE]
 
 Manage CVE data and query Ollama.
 
@@ -29,6 +34,8 @@ options:
                         The query for Whoosh.
   --ollama_prompt OLLAMA_PROMPT
                         The prompt for Ollama.
+  --context_size CONTEXT_SIZE
+                        The context size for Ollama.
 ```
 
 ## Make query to Whoosh and update Whoosh index (`--update`)  with the latest CVE data. Use Whoosh query results as context to prompt (`--ollama_prompt`).

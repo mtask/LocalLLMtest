@@ -1,0 +1,49 @@
+- hosts: localhost
+  tasks:
+  - name: Create docker network for ollama
+    docker_network:
+      name: network_ollama
+      ipam_config:
+        - subnet: 10.10.1.0/24
+          gateway: 10.10.1.1
+          iprange: 10.10.1.0/26
+  - name: Run ollama container
+    docker_container:
+      name: ollama
+      image: ollama/ollama
+      state: started
+      networks:
+        - name: network_ollama
+          ipv4_address: 10.10.1.10
+      volumes:
+        - ollama:/root/.ollama
+      restart: yes
+      ports:
+        - "127.0.0.1:11434:11434"
+      auto_remove: yes
+      cap_drop:
+        - all
+      capabilities:
+        - sys_nice
+      memory: 8G
+      memory_swap: 8G
+  - name: Run ollama container
+    docker_container:
+      name: ollama
+      image: ollama/ollama
+      state: started
+      networks:
+        - name: network_ollama
+          ipv4_address: 10.10.1.10
+      volumes:
+        - ollama:/root/.ollama
+      restart: yes
+      ports:
+        - "127.0.0.1:11434:11434"
+      auto_remove: yes
+      cap_drop:
+        - all
+      capabilities:
+        - sys_nice
+      memory: 8G
+      memory_swap: 8G

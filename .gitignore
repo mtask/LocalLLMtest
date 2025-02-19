@@ -1,4 +1,6 @@
 whoosh_index
+whoosh_rss_index
+whoosh_cve_index
 __pycache__
 *.zip
 .seen_cve_ids.json
