@@ -10,7 +10,8 @@ from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
 # Define the LLM model to be used
-llm_model = "llama3.2:1b"
+#llm_model = "llama3.2:1b"
+llm_model = "llama3.2:3b"
 
 class RssFeed:
     def __init__(self):

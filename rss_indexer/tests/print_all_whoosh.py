@@ -14,7 +14,7 @@ schema = Schema(
 )
 
 # Create an index directory
-index_dir = os.path.join(os.getcwd(), "whoosh_index")
+index_dir = os.path.join(os.getcwd(), "whoosh_rss_index")
 
 def print_all_cves():
     """Print all indexed CVEs from the Whoosh index."""
