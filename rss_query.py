@@ -4,16 +4,14 @@ import feedparser
 from langchain_ollama import OllamaLLM
 from whoosh import index
 from whoosh.fields import Schema, TEXT, ID, DATETIME, KEYWORD
-from whoosh.qparser import QueryParser
-from whoosh.query import Every
-from datetime import datetime
+from whoosh.query import DateRange
+from datetime import datetime, timedelta
 
 # Define the LLM model to be used
 llm_model = "llama3.2:1b"
 
 class RssFeed:
-    def __init__(self, url="https://feeds.feedburner.com/TheHackersNews"):
-        self.url = url
+    def __init__(self):
         self.schema = Schema(
             id=ID(stored=True, unique=True),
             title=TEXT(stored=True),
@@ -25,9 +23,9 @@ class RssFeed:
         if not os.path.exists(self.index_dir):
             os.mkdir(self.index_dir)
 
-    def create_index(self):
+    def create_index(self, url):
         """Create or update a Whoosh index with RSS feed data."""
-        feed = feedparser.parse(self.url)
+        feed = feedparser.parse(url)
         # Check if the index exists
         if index.exists_in(self.index_dir):
             ix = index.open_dir(self.index_dir)
@@ -44,16 +42,13 @@ class RssFeed:
                 published=published
             )
         writer.commit()
-        print("RSS feed data has been indexed into Whoosh")
+        print(f"RSS feed data from {url} has been indexed into Whoosh")
 
-    def search_index(self, query_text, n_results=5):
-        """Search the Whoosh index for relevant documents."""
+    def search_index(self, days, n_results=5):
+        """Search the Whoosh index for documents published within the given number of days."""
         ix = index.open_dir(self.index_dir)
-        if query_text.lower() == "all":
-            query = Every()
-        else:
-            qp = QueryParser("description", ix.schema)
-            query = qp.parse(query_text)
+        date_limit = datetime.now() - timedelta(days=days)
+        query = DateRange("published", date_limit, datetime.now())
         with ix.searcher() as searcher:
             results = searcher.search(query, limit=n_results)
             documents = [hit.fields() for hit in results]
@@ -65,10 +60,10 @@ def query_ollama(prompt, context_size):
     return llm.invoke(prompt)
 
 # RAG pipeline: Combine Whoosh and Ollama for Retrieval-Augmented Generation
-def rag_pipeline(rss_feed, whoosh_query, ollama_prompt, context_size):
+def rag_pipeline(rss_feed, days, ollama_prompt, context_size):
     """Perform Retrieval-Augmented Generation (RAG) by combining Whoosh and Ollama."""
     # Step 1: Retrieve relevant documents from Whoosh
-    retrieved_docs = rss_feed.search_index(whoosh_query, n_results=None if whoosh_query.lower() == "all" else 5)
+    retrieved_docs = rss_feed.search_index(days, n_results=5)
     context = " ".join([
         f"ID: {doc['id']}\nTitle: {doc['title']}\nLink: {doc['link']}\nDescription: {doc['description']}\nPublished: {doc['published']}"
         for doc in retrieved_docs
@@ -85,19 +80,23 @@ def rag_pipeline(rss_feed, whoosh_query, ollama_prompt, context_size):
 def main():
     parser = argparse.ArgumentParser(description="Manage RSS feed data and query Ollama.")
     parser.add_argument('--update', action='store_true', help="Update Whoosh index with new RSS feed data.")
-    parser.add_argument('--whoosh_query', type=str, required=True, help="The query for Whoosh.")
+    parser.add_argument('--days', type=int, required=True, help="The number of days for retrieving data from Whoosh.")
     parser.add_argument('--ollama_prompt', type=str, required=True, help="The prompt for Ollama.")
     parser.add_argument('--context_size', type=int, default=2048, help="The context size for Ollama.")
     args = parser.parse_args()
-    rss_urls = ["https://feeds.feedburner.com/TheHackersNews"]
+    rss_urls = [
+      "https://feeds.feedburner.com/TheHackersNews",
+      "https://cvefeed.io/rssfeed/severity/high.xml",
+      "https://cvefeed.io/rssfeed/newsroom.xml"]
 
-    for rss_url in rss_urls:
-        rss_feed = RssFeed(url=rss_url)
-        if args.update:
-            rss_feed.create_index()
+    rss_feed = RssFeed()
+    if args.update:
+        for rss_url in rss_urls:
+            rss_feed.create_index(rss_url)
 
-        response = rag_pipeline(rss_feed, args.whoosh_query, args.ollama_prompt, args.context_size)
-        print(f"######## Response from LLM for RSS feed {rss_url} ########\n", response)
+    response = rag_pipeline(rss_feed, args.days, args.ollama_prompt, args.context_size)
+    print(f"######## Response from LLM for RSS feed ########\n", response)
 
 if __name__ == "__main__":
     main()
+
