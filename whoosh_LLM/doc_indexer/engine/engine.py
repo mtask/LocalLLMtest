@@ -7,14 +7,14 @@ from langchain_ollama import OllamaLLM
 
 class Engine:
 
-    def __init__(self, conf):
-        self.index_dir = conf['index_dir']
+    def __init__(self, index_conf, model="llama3.2:1b"):
+        self.index_dir = index_conf['index_dir']
         if not os.path.isdir(self.index_dir):
             print("Creating index")
             os.mkdir(self.index_dir)
             self.create_index()
         self.ix = open_dir(self.index_dir)
-        self.ollama_model = "llama3.2:3b"
+        self.ollama_model = model
 
     def create_index(self):
         schema = Schema(title=TEXT(stored=True), path=ID(stored=True), content=TEXT(stored=True))
