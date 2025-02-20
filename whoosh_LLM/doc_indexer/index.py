@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 import argparse
-import yaml
 from engine.engine import Engine
 
 def recursive(doc_type):
