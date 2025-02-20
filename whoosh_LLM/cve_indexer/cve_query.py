@@ -37,7 +37,7 @@ def create_index():
         print("writing item")
         writer.update_document(
             id=cve_item['id'],
-            description=cve_item['description'],
+            description=cve_item['description'].strip(),
             impact=cve_item['impact'],
             severity=cve_item['severity'],
             exploited=cve_item['exploited']
@@ -65,16 +65,10 @@ def query_ollama(prompt, context_size):
     llm = OllamaLLM(model=llm_model, context_size=context_size)
     return llm.invoke(prompt)
 
-# RAG pipeline: Combine Whoosh and Ollama for Retrieval-Augmented Generation
-def rag_pipeline(whoosh_query, ollama_prompt, context_size):
-    """Perform Retrieval-Augmented Generation (RAG) by combining Whoosh and Ollama."""
-    # Step 1: Retrieve relevant documents from Whoosh
+def get_response(whoosh_query, ollama_prompt, context_size):
     retrieved_docs = search_index(whoosh_query, n_results=None if whoosh_query.lower() == "all" else 5)
     context = " ".join([f"ID: {doc['id']}\nDescription: {doc['description']}\nSeverity: {doc['severity']}\nImpact: {doc['impact']}" for doc in retrieved_docs]) if retrieved_docs else "No relevant documents found."
-
-    # Step 2: Send the query along with the context to Ollama
     augmented_prompt = f"Context: {context}\n\nQuestion: {ollama_prompt}\nAnswer:"
-    print("######## Augmented Prompt ########")
     print(augmented_prompt)
 
     response = query_ollama(augmented_prompt, context_size)
@@ -91,8 +85,8 @@ def main():
     if args.update:
         create_index()
 
-    response = rag_pipeline(args.whoosh_query, args.ollama_prompt, args.context_size)
-    print("######## Response from LLM ########\n", response)
+    response = get_response(args.whoosh_query, args.ollama_prompt, args.context_size)
+    print(response)
 
 if __name__ == "__main__":
     main()

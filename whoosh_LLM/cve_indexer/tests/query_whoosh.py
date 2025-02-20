@@ -14,7 +14,7 @@ schema = Schema(
 )
 
 # Create an index directory
-index_dir = os.path.join(os.getcwd(), "whoosh_rss_index")
+index_dir = os.path.join(os.getcwd(), "whoosh_cve_index")
 
 def search_index(query_text, n_results=5):
     """Search the Whoosh index for relevant documents."""
