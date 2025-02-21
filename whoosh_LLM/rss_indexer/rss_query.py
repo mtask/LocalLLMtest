@@ -81,7 +81,7 @@ class RssFeed:
 
 def query_ollama(prompt, context_size):
     """Send a query to Ollama and retrieve the response."""
-    llm = OllamaLLM(model=llm_model, context_size=context_size)
+    llm = OllamaLLM(model=llm_model, num_ctx=context_size)
     return llm.invoke(prompt)
 
 def get_response(rss_feed, days, whoosh_query, ollama_prompt, context_size):

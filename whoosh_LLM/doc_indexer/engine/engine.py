@@ -52,7 +52,7 @@ class Engine:
 
     def query_ollama(self, prompt, context_size):
         """Send a query to Ollama and retrieve the response."""
-        llm = OllamaLLM(model=self.ollama_model, context_size=context_size)
+        llm = OllamaLLM(model=self.ollama_model, num_ctx=context_size)
         return llm.invoke(prompt)
 
     def generate_response(self, query, prompt, context_size=4096):

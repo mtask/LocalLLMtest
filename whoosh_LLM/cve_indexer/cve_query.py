@@ -8,7 +8,7 @@ from whoosh.qparser import QueryParser
 from whoosh.query import Every
 
 # Define the LLM model to be used
-llm_model = "llama3.2:1b"
+llm_model = "llama3.2:3b"
 
 # Define the schema for Whoosh
 schema = Schema(
@@ -62,7 +62,7 @@ def search_index(query_text, n_results=5):
 
 def query_ollama(prompt, context_size):
     """Send a query to Ollama and retrieve the response."""
-    llm = OllamaLLM(model=llm_model, context_size=context_size)
+    llm = OllamaLLM(model=llm_model, num_ctx=context_size)
     return llm.invoke(prompt)
 
 def get_response(whoosh_query, ollama_prompt, context_size):
