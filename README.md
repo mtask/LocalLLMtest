@@ -15,3 +15,7 @@ docker exec -it ollama ollama pull llama3.2:1b
 ## whoosh_LLM
 
 This directory contains scripts that uses Whoosh to index additional context which is then combined with the prompt. It has its own README with more details.
+
+## chatters
+
+This directory contains script where you can put two LLM instances to "talk" with each other. It will ask an initial prompt which will kickstart the discussion with the first bot.
