@@ -10,5 +10,6 @@ It should keep the context window for each bot while the same process is running
 Previous messages are stored in a list of dictionaries, so it might be that the model just gets X first messages as context if the context size is exceeded.
 
 You can "debug" model1 or model2 in seperate debug prompts by giving an cli argument `--debug_model1` or `--debug_model2`. 
+Debug prompts are prompted between chat responses and do not affect the actual (debug has its own messages context), but the actual chat so far is part of the debugging context for debugging purposes.
 
-Prompts are prompted between chat responses and do not affect the actual (debug has its own messages context), but the actual chat so far is part of the debugging context for debugging purposes.
+You can also launch debugging at any point without `--debug*` options by pressing `Ctrl+c` and selecting debug option the given menu.
