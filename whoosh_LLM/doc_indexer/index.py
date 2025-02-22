@@ -30,7 +30,7 @@ def index_text(engine, path, title):
     printable = set(string.printable)
     with open(path, 'r') as f:
         for line in f.readlines():
-            if re.match(r'.*[A-z]+.*', line) and len(line) >= min:
+            if re.match(r'.*[A-z]+.*', line) and len(line) >= 1:
                 content.append(''.join(filter(lambda x: x in printable, line)))
     if not title:
         title = os.path.basename(path)
