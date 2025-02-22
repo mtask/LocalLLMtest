@@ -6,6 +6,7 @@ import sys
 
 from ollama import chat
 from ollama import ChatResponse
+from ollama import Options
 
 
 class bcolors:
@@ -32,11 +33,13 @@ class Bot:
 
     def _send_messages(self):
         if self.debug:
-            response: ChatResponse = chat(model=self.model, messages=self.debug_messages, options=Options(num_ctx=8192))
+            response: ChatResponse = chat(model=self.model, messages=self.debug_messages)
             # Always reset debug messages
             self.debug_messages = []
         else:
             response: ChatResponse = chat(model=self.model, messages=self.messages)
+            # Is this useful option to override num_ctx here an does it even work?
+            #response: ChatResponse = chat(model=self.model, messages=self.messages, options=Options(num_ctx=8192))
             # Add response only when not debugging
             self._add_message(response.message.content, 'assistant')
         return response.message.content
@@ -60,6 +63,25 @@ def debug(bot, name):
         print(f"<debug>\n{r}\n</debug>")
     bot.debug = False
 
+def interrupt(bot1, bot2):
+    print("""
+    Select an option:
+    1) Exit
+    2) Debug bot1
+    3) Debug bot2
+    """)
+    while True:
+        ans = input("select> ")
+        if ans.strip() == "1":
+            sys.exit(0)
+        elif ans.strip() == "2":
+            debug(bot1, "BOT1")
+            break
+        elif ans.strip() == "3":
+            debug(bot2, "BOT2")
+            break
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="A sample program to demonstrate argparse")
     parser.add_argument("--model1", required=True,
@@ -81,11 +103,14 @@ if __name__ == "__main__":
     r = bot1.talk(start)
     print(f"{bcolors.BLUE}BOT1: {r}{bcolors.END}")
     while True:
-        r = bot2.talk(r)
-        print(f"{bcolors.RED}BOT2: {r}{bcolors.END}")
-        if args.debug_model2:
-           debug(bot2, "bot2")
-        r = bot1.talk(r)
-        print(f"{bcolors.BLUE}BOT1: {r}{bcolors.END}")
-        if args.debug_model1:
-           debug(bot1, "bot1")
+        try:
+            r = bot2.talk(r)
+            print(f"{bcolors.RED}BOT2: {r}{bcolors.END}")
+            if args.debug_model2:
+                debug(bot2, "bot2")
+            r = bot1.talk(r)
+            print(f"{bcolors.BLUE}BOT1: {r}{bcolors.END}")
+            if args.debug_model1:
+                debug(bot1, "bot1")
+        except KeyboardInterrupt:
+            interrupt(bot1, bot2)
