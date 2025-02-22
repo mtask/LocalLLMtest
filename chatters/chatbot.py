@@ -32,7 +32,7 @@ class Bot:
 
     def _send_messages(self):
         if self.debug:
-            response: ChatResponse = chat(model=self.model, messages=self.debug_messages)
+            response: ChatResponse = chat(model=self.model, messages=self.debug_messages, options=Options(num_ctx=8192))
             # Always reset debug messages
             self.debug_messages = []
         else:
